@@ -1,0 +1,32 @@
+# AppVeyor - Windows CI (免费 1000 分钟/月)
+# 比 GitHub Actions 在 Windows runner 上更稳
+
+image: Visual Studio 2022
+platform: x64
+
+environment:
+  matrix:
+    - PYTHON: "C:\\Python311"
+      PYTHON_ARCH: "64"
+
+install:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "python --version"
+  - "python -m pip install --upgrade pip"
+  - "pip install -r requirements.txt"
+  - "pip install pyinstaller"
+
+build_script:
+  - "pyinstaller --onefile --noconsole --name OneInstall --distpath dist --workpath build --clean --noconfirm --hidden-import=pywinauto --hidden-import=pywinauto.findwindows --hidden-import=PIL --add-data \"configs;configs\" main.py"
+
+after_build:
+  - "dir dist"
+
+test_script:
+  - "dist\\OneInstall.exe --list-configs"
+
+artifacts:
+  - path: dist\OneInstall.exe
+    name: OneInstall-Windows-EXE
+  - path: configs
+    name: OneInstall-Configs
