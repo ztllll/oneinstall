@@ -1,0 +1,39 @@
+# OneInstall - 考试场景专用配置
+# 优先静默, 静默失败时最少 GUI 交互
+# 适合考场/机房无人值守场景
+
+silent_args:
+  - /S
+  - /VERYSILENT
+  - /SUPPRESSMSGBOXES
+  - /NORESTART
+  - /quiet
+  - /qn
+  - /passive
+
+installer_type: auto
+
+# 简化按钮列表, 减少误匹配
+wizard_buttons:
+  - names: [我接受, I accept, &I accept]
+    action: check
+    control_type: CheckBox
+
+  - names: [下一步, Next, &Next]
+    action: click
+    control_type: Button
+
+  - names: [安装, Install, &Install]
+    action: click
+    control_type: Button
+
+  - names: [完成, Finish, &Finish, Close, 关闭]
+    action: click
+    control_type: Button
+    is_done: true
+
+skip_on_error: true
+timeout: 600
+step_timeout: 30
+screenshot_dir: screenshots
+debug_screenshot: false

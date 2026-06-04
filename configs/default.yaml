@@ -1,0 +1,85 @@
+# OneInstall 默认配置
+# 覆盖主流 Windows 安装程序(InnoSetup/NSIS/MSI/InstallShield 等)
+# 注释用 #, 不支持 // 或 /* */
+
+# 静默安装参数 - 按顺序尝试, 第一个成功就停
+# Inno Setup: /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+# NSIS: /S
+# MSI: /qn /norestart
+# InstallShield: /s /v"/qn"
+silent_args:
+  - /S
+  - /VERYSILENT
+  - /SUPPRESSMSGBOXES
+  - /NORESTART
+  - /silent
+  - /quiet
+  - /qn
+  - /passive
+
+# 安装程序类型: auto | inno_setup | nsis | msi | installshield | wix
+# auto: 启发式识别(按文件大小/版本信息/二进制签名)
+installer_type: auto
+
+# GUI 模式按钮匹配规则
+# 按顺序匹配, 找到第一个匹配的按钮就执行 action
+wizard_buttons:
+  # ----- 协议勾选 (CheckBox) -----
+  - names:
+      - 我接受
+      - I accept
+      - 我同意
+      - I Agree
+      - 接受
+      - Accept
+      - &Accept
+    action: check
+    control_type: CheckBox
+
+  # ----- 下一步/下一步 -----
+  - names:
+      - 下一步
+      - Next
+      - 下一步(N)>
+      - 下一步(&N)
+      - &Next
+    action: click
+    control_type: Button
+
+  # ----- 安装 -----
+  - names:
+      - 安装
+      - Install
+      - 安装(I)>
+      - 安装(&I)
+      - &Install
+    action: click
+    control_type: Button
+
+  # ----- 完成 (is_done: true 表示这是结束标志) -----
+  - names:
+      - 完成
+      - Finish
+      - 完成(F)>
+      - 完成(&F)
+      - &Finish
+      - Close
+      - 关闭
+    action: click
+    control_type: Button
+    is_done: true
+
+# 跳过单个按钮错误继续
+skip_on_error: true
+
+# 总超时(秒) - 硬上限
+timeout: 600
+
+# 单步超时(秒) - 找窗口/找按钮
+step_timeout: 30
+
+# 失败截图保存目录(EXE 模式下重定向到 %USERPROFILE%\OneInstall\screenshots\)
+screenshot_dir: screenshots
+
+# 调试模式: 每步截图(耗性能, 排查问题时用)
+debug_screenshot: false

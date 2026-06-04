@@ -1,0 +1,12 @@
+# OneInstall 运行时依赖
+# Python 3.11+
+
+# GUI 自动化 (Windows-only, Linux 上 import 不报错但不能用)
+pywinauto>=0.6.8
+pywin32>=306; sys_platform == 'win32'
+
+# 配置加载
+PyYAML>=6.0
+
+# 截图
+Pillow>=10.0.0

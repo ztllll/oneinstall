@@ -1,0 +1,28 @@
+# OneInstall - NSIS (Nullsoft Scriptable Install System) 专用配置
+# 用于 7-Zip, Notepad++ 旧版, WinRAR 等
+# 静默参数: /S (大写, 区分大小写)
+# GUI 特征: 标题含软件名 + "Setup", 按钮简洁
+
+silent_args:
+  - /S
+  - /S /NCRC
+  - /D=C:\Program Files\MyApp
+
+installer_type: nsis
+
+# NSIS 流程: 安装位置 -> Install -> (完成页面) -> Close
+wizard_buttons:
+  - names: [下一步, Next, &Next, Next >, Install, &Install]
+    action: click
+    control_type: Button
+
+  - names: [完成, Finish, &Finish, Finish >, Close, 关闭]
+    action: click
+    control_type: Button
+    is_done: true
+
+# NSIS 安装通常 < 30s
+timeout: 300
+step_timeout: 15
+screenshot_dir: screenshots
+debug_screenshot: false
