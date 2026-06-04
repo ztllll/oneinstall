@@ -1,7 +1,8 @@
 name: Build Windows EXE
 
 # 触发条件: push 到 main / 手动触发 / 打 tag
-on:
+# 注意: 'on' 必须加引号, 否则 PyYAML 1.1 会解析为布尔值 True
+"on":
   push:
     branches: [main]
     tags: ['v*']
