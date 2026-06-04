@@ -1,19 +1,12 @@
 name: Build Windows EXE
 
-# 触发条件: push 到 main / 手动触发 / 打 tag
-# 注意: "on" 必须加引号, 否则 PyYAML 1.1 会解析为布尔值 True
+# "on" 必须加引号, PyYAML 1.1 会把 on/off 当 bool
 "on":
   push:
     branches: [main]
     tags: ['v*']
   workflow_dispatch:
-    inputs:
-      release:
-        description: 'Create a GitHub Release?'
-        required: false
-        default: 'false'
 
-# 防止并发构建
 concurrency:
   group: build-windows-exe
   cancel-in-progress: false
@@ -22,85 +15,66 @@ jobs:
   build:
     name: Build OneInstall.exe
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install dependencies
+      - name: Install deps
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install nuitka
-          # Nuitka 编译 C 扩展需要 C 编译器
-          pip install ordered-set zstandard
+          pip install pyinstaller
 
-      - name: Build with Nuitka
-        shell: pwsh
+      - name: Build EXE
         run: |
-          python -m nuitka `
-            main.py `
+          pyinstaller `
             --onefile `
-            --windows-disable-console `
-            --windows-company-name="OneInstall" `
-            --windows-product-name="OneInstall" `
-            --windows-file-version=0.1.0 `
-            --windows-product-version=0.1.0 `
-            --windows-file-description="Windows One-Click Auto Installer" `
-            --output-filename=OneInstall.exe `
-            --output-dir=dist `
-            --enable-plugin=anti-bloat `
-            --include-package=pywinauto `
-            --include-package=pywin32 `
-            --include-package=PIL `
-            --include-data-dir=configs=configs `
-            --show-progress `
-            --show-memory `
-            --remove-output 2>&1 | Tee-Object -FilePath build.log
-        continue-on-error: false
+            --noconsole `
+            --name OneInstall `
+            --distpath dist `
+            --workpath build `
+            --clean `
+            --noconfirm `
+            --hidden-import=pywinauto `
+            --hidden-import=pywinauto.findwindows `
+            --hidden-import=PIL `
+            --add-data "configs;configs" `
+            main.py
 
-      - name: List build artifacts
+      - name: Verify EXE
         shell: pwsh
         run: |
           if (Test-Path dist/OneInstall.exe) {
             $size = (Get-Item dist/OneInstall.exe).Length
-            Write-Host "✓ OneInstall.exe size: $([math]::Round($size/1MB, 2)) MB"
+            Write-Host "✓ Size: $([math]::Round($size/1MB, 2)) MB"
+            # smoke test
+            cd dist
+            .\OneInstall.exe --list-configs
           } else {
-            Write-Error "✗ OneInstall.exe not found!"
+            Write-Error "✗ EXE not found"
             exit 1
           }
 
-      - name: Smoke test (--list-configs)
-        shell: pwsh
-        run: |
-          cd dist
-          .\OneInstall.exe --list-configs
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: OneInstall-windows
           path: |
             dist/OneInstall.exe
-            build.log
             configs/
           if-no-files-found: error
           retention-days: 30
 
-      - name: Create Release (only on tag push)
+      - name: Create Release on tag
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: dist/OneInstall.exe
           generate_release_notes: true
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
