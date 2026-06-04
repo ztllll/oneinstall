@@ -1,4 +1,4 @@
-name: Build Windows EXE
+name: Test
 
 "on":
   push:
@@ -6,9 +6,11 @@ name: Build Windows EXE
   workflow_dispatch:
 
 jobs:
-  build:
+  test-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello ubuntu
+  test-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: hello
-        run: echo hello world
+      - run: echo hello windows
