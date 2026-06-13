@@ -53,9 +53,17 @@ DEFAULT_CONFIG: dict[str, Any] = {
 
 
 def _config_dir() -> Path:
-    """配置文件目录, EXE 模式下指向 _MEIPASS 旁的 configs/."""
+    """配置文件目录.
+
+    - EXE 模式: PyInstaller 把 configs 嵌到 _MEIPASS/configs/
+    - 开发模式: 项目根目录的 configs/
+    - EXE 同目录 (fallback): 让用户可以覆盖配置
+    """
     if getattr(__import__("sys"), "frozen", False):
-        # 打包后: 配置在 EXE 同目录的 configs/
+        # 打包后: 优先 _MEIPASS (PyInstaller 临时目录), fallback 到 EXE 同目录
+        meipass = getattr(__import__("sys"), "_MEIPASS", None)
+        if meipass:
+            return Path(meipass) / "configs"
         return Path(__import__("sys").executable).parent / "configs"
     # 开发模式: 项目根目录的 configs/
     return Path(__file__).resolve().parent.parent / "configs"
