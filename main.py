@@ -9,7 +9,26 @@
 from __future__ import annotations
 
 import argparse
+import io
+import os
 import sys
+
+# 强制 UTF-8 stdout/stderr, 避免 Windows cp1252/cp936 编码问题
+# 必须在任何 print() 之前
+if sys.stdout and hasattr(sys.stdout, "buffer"):
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
+    except (AttributeError, ValueError):
+        pass
+if sys.stderr and hasattr(sys.stderr, "buffer"):
+    try:
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace", line_buffering=True)
+    except (AttributeError, ValueError):
+        pass
+
+# 也设置环境变量, 给子进程用
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+os.environ.setdefault("PYTHONUTF8", "1")
 
 from installer.config import list_configs
 from installer.core import AutoInstaller, DEFAULT_EXE_PATH
